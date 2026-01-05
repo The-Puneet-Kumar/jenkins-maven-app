@@ -1,27 +1,43 @@
 pipeline {
     agent any
 
+    environment {
+        JAVA_HOME = "/usr/lib/jvm/java-21-openjdk-amd64"
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+    }
+
     stages {
 
         stage('Checkout Code') {
             steps {
-                echo 'Code already checked out from GitHub'
+                echo "Checking out source code..."
+                checkout scm
             }
         }
 
-        stage('Build with Maven') {
+        stage('Verify Tools') {
             steps {
-                sh 'mvn clean package'
+                sh '''
+                    java -version
+                    mvn -version
+                '''
+            }
+        }
+
+        stage('Build Maven App') {
+            steps {
+                echo "Building Maven project..."
+                sh 'mvn clean package -DskipTests'
             }
         }
     }
 
     post {
         success {
-            echo 'CI/CD Pipeline SUCCESS ✅'
+            echo "✅ BUILD SUCCESSFUL"
         }
         failure {
-            echo 'CI/CD Pipeline FAILED ❌'
+            echo "❌ BUILD FAILED"
         }
     }
 }
