@@ -1,26 +1,44 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JDK21'           // Must match Jenkins JDK config
+        maven 'Maven3'        // Must match Jenkins Maven config
+    }
+
     stages {
-        stage('Checkout Code') {
+
+        stage('Clone Code') {
             steps {
-                checkout scm
+                git url: 'https://github.com/The-Puneet-Kumar/jenkins-maven-app.git'
             }
         }
 
-        stage('Build with Maven') {
+        stage('Clean & Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Archive WAR') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo 'Build Successful!'
+            echo '🎉 Build successful!'
         }
         failure {
-            echo 'Build Failed'
+            echo '❌ Build failed!'
         }
     }
 }
